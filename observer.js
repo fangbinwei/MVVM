@@ -1,4 +1,5 @@
 var uid = 0;
+
 function Dep() {
     this.subs = [];
     this.id = uid++;
@@ -10,7 +11,7 @@ Dep.prototype = {
         this.subs.push(sub);
     },
     depend: function () {
-        Dep.target.addDep(this);  // Dep.target指向Watcher实例
+        Dep.target.addDep(this); // Dep.target指向Watcher实例
     },
     notify: function () {
         this.subs.forEach(function (sub) {
@@ -24,37 +25,53 @@ Dep.target = null;
 /**
  * 数据监听,作为发布者,当数据变化时,通知订阅者
  */
-var data = {name: 'name before', age: 12};
-observer(data);
-data.name = 'fangbinwei';
-
-function observer(data) {
+function observe(data) {
     if (!data || typeof data !== 'object') {
-        return false;
+        return;
     }
-
-    Object.keys(data).forEach(function(key) {
-        defineReactive(data, key, data[key]);
-    })
+    return new Observer(data);
 }
 
-function defineReactive(data, key, val) {
-    var dep = new Dep();
-    observer(val); // 递归子属性
-    Object.defineProperty(data, key, {
-        enumerable: true,
-        configurable: false,
-        get: function () {
-            if(Dep.target) {
-                dep.depend();
+function Observer (data) {
+    this.data = data;
+    this.walk(data)
+}
+
+Observer.prototype = {
+    construct: Observer,
+    walk: function(data) {
+       Object.keys(data).forEach((key) => {
+           this.convert(key, data[key]);
+       }) 
+    },
+    convert: function(key,val) {
+        this.defineReactive(this.data, key, val);
+    },
+    defineReactive: function(data, key, val) {
+        var dep = new Dep();
+        var childObj = observe(val);
+
+        Object.defineProperty(data, key, {
+            enumerable: true,
+            configurable: false,
+            get: function () {
+                if (Dep.target) {
+                    dep.depend();
+                }
+                return val;
+            },
+            set: function(newVal) {
+                if (newVal === val) return;
+                val = newVal;
+                childObj = observe(val);
+                dep.notify();
             }
-            return val;
-        },
-        set: function (newVal) {
-            if (val === newVal) return;
-            console.log(`value of data has been changed!! from ${val} --> ${newVal}`);
-            val = newVal;
-            dep.notify()
-        }
-    });
+        })
+    }
 }
+var data = {
+    name: 'name before',
+    age: 12
+};
+observe(data);
+data.name = 'fangbinwei';
