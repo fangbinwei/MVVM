@@ -5,12 +5,12 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>MVVM</title>
 </head>
 <body>
 <div id="mvvm-app">
-    <input type="text" v-model="name">
-    <p>name: {{name}}</p>
+    <input type="text" v-model="name.name">
+    <p>name: {{name.name}}</p>
     <p>age1: {{age}}</p>
     <p>age2: {{age}}</p>
 </div>
@@ -18,5 +18,15 @@
 <script src="./observer.js"></script>
 <script src="./watcher.js"></script>
 <script src="./compile.js"></script>
+<script src="./mvvm.js"></script>
+<script>
+    var vm = new MVVM({
+        el: '#mvvm-app',
+        data: {
+            name: {name: 'binwei'},
+            age: 12
+        }
+    })
+</script>
 </body>
 </html>
