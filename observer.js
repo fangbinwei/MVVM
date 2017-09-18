@@ -2,8 +2,8 @@ var uid = 0;
 
 function Dep() {
     this.subs = [];
-    this.id = uid++;
     console.log('uid', uid)
+    this.id = uid++;
 }
 Dep.prototype = {
     construct: Dep,
@@ -32,22 +32,22 @@ function observe(data) {
     return new Observer(data);
 }
 
-function Observer (data) {
+function Observer(data) {
     this.data = data;
     this.walk(data)
 }
 
 Observer.prototype = {
-    construct: Observer,
-    walk: function(data) {
-       Object.keys(data).forEach((key) => {
-           this.convert(key, data[key]);
-       }) 
+    constructor: Observer,
+    walk: function (data) {
+        Object.keys(data).forEach((key) => {
+            this.convert(key, data[key]);
+        })
     },
-    convert: function(key,val) {
+    convert: function (key, val) {
         this.defineReactive(this.data, key, val);
     },
-    defineReactive: function(data, key, val) {
+    defineReactive: function (data, key, val) {
         var dep = new Dep();
         var childObj = observe(val);
 
@@ -60,18 +60,13 @@ Observer.prototype = {
                 }
                 return val;
             },
-            set: function(newVal) {
+            set: function (newVal) {
                 if (newVal === val) return;
                 val = newVal;
+                // 
                 childObj = observe(val);
                 dep.notify();
             }
         })
     }
 }
-var data = {
-    name: 'name before',
-    age: 12
-};
-observe(data);
-data.name = 'fangbinwei';

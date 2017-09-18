@@ -5,13 +5,14 @@
  * @param cb
  * @constructor
  */
-// var watchers = []; //test
-function Watcher(vm, dirVal, cb) {
+function Watcher(vm, dirVal, dir, cb) {
     this.vm = vm;
     this.dirVal = dirVal;
+    this.type = dir;
     this.cb = cb;
+    // 记录 包含当前Watcher实例的Dep实例
     this.depIds = {};
-    
+
     this.getter = this.parseGetter(dirVal);
 
     //触发observer中的getter
@@ -19,18 +20,18 @@ function Watcher(vm, dirVal, cb) {
 }
 
 Watcher.prototype = {
-    construct: Watcher,
+    constructor: Watcher,
     addDep: function (dep) {
+        console.log('depIds', this.depIds)
         if (!this.depIds.hasOwnProperty(dep.id)) {
             console.log('dep.id', dep.id)
             console.log('watcher', this)
             dep.addSub(this);
-            // watchers.push(this); //test
             this.depIds[dep.id] = dep;
         }
     },
     get: function () {
-        Dep.target = this;  //将订阅者指向自己
+        Dep.target = this; //将订阅者指向自己
         var value = this.getter.call(this.vm, this.vm); //触发observer中getter
         Dep.target = null;
         return value;

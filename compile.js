@@ -1,6 +1,6 @@
 function Compile(el, vm) {
     this.$vm = vm;
-    this.$el = this.isElementNode(el) ? el: document.querySelector(el);
+    this.$el = this.isElementNode(el) ? el : document.querySelector(el);
 
     if (this.$el) {
         this.$fragment = this.node2Fragment(this.$el);
@@ -10,7 +10,7 @@ function Compile(el, vm) {
 }
 
 Compile.prototype = {
-    construct: Compile,
+    constructor: Compile,
     init: function () {
         this.compile(this.$fragment);
     },
@@ -25,20 +25,20 @@ Compile.prototype = {
     compile: function (el) {
         var childNodes = el.childNodes,
             me = this;
-       // 可以用ES6箭头函数 Array.from
+        // 可以用ES6箭头函数 Array.from
         Array.prototype.slice.call(childNodes).forEach(function (node) {
-                var text = node.textContent;
-                var reg = /\{\{(.*)\}\}/;
-                if (me.isElementNode(node)) {
-                    me.compileElement(node);
-                } else if (me.isTextNode(node) && reg.test(text)) {
-                    me.compileText(node,RegExp.$1);
-                }
+            var text = node.textContent;
+            var reg = /\{\{(.*)\}\}/;
+            if (me.isElementNode(node)) {
+                me.compileElement(node);
+            } else if (me.isTextNode(node) && reg.test(text)) {
+                me.compileText(node, RegExp.$1);
+            }
 
-                if (node.childNodes && node.childNodes.length) {
-                    me.compile(node);
-                }
-            })
+            if (node.childNodes && node.childNodes.length) {
+                me.compile(node);
+            }
+        })
     },
     compileElement: function (node) {
         var nodeAttrs = node.attributes,
@@ -83,7 +83,7 @@ var compileUtil = {
         updaterFn && updaterFn(node, this._getVMVal(vm, dirVal));
 
         // 绑定时实例化Watcher
-        new Watcher(vm, dirVal, function (value) {
+        new Watcher(vm, dirVal, dir, function (value) {
             updaterFn && updaterFn(node, value);
         })
     },
@@ -105,15 +105,15 @@ var compileUtil = {
         var val = vm;
         dirVal = dirVal.split('.');
         dirVal.forEach(function (item) {
-            val = val[item];  // 触发getter
+            val = val[item]; // 触发getter
         });
         return val;
     },
     _setVMVal: function (vm, dirVal, newVal) {
         var val = vm;
-        dirVal=dirVal.split('.');
+        dirVal = dirVal.split('.');
         dirVal.forEach(function (item, index) {
-            if (index < dirVal.length -1) {
+            if (index < dirVal.length - 1) {
                 val = val[item];
             } else {
                 val[item] = newVal;
@@ -124,7 +124,7 @@ var compileUtil = {
 
 var updater = {
     modelUpdater: function (node, value) {
-        node.value = typeof value == 'undefined'? '' : value;
+        node.value = typeof value == 'undefined' ? '' : value;
     },
     textUpdater: function (node, value) {
         node.textContent = typeof value == 'undefined' ? '' : value;
