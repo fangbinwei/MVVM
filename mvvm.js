@@ -5,10 +5,12 @@ function MVVM(options) {
     // vm.xx -> vm._data.xxx
     Object.keys(data).forEach((item) => {
         this._proxyData(item);
-    })
+    });
 
-    observe(data)
-    this.$compile = new Compile(options.el || document.body, this)
+    this._initComputed();
+
+    observe(data);
+    this.$compile = new Compile(options.el || document.body, this);
 }
 MVVM.prototype = {
     constructor: MVVM,
@@ -25,5 +27,24 @@ MVVM.prototype = {
                     me._data[key] = newVal;
                 }
             });
+    },
+    _initComputed: function () {
+        var me = this;
+        var computed = this.$options.computed;
+        if (typeof computed === 'object') {
+            Object.keys(computed).forEach(function (key) {
+                Object.defineProperty(me, key, {
+                    configurable: false,
+                    enumerable: true,
+                    // get: typeof computed[key] === 'function'?
+                    //     computed[key] : '',
+                    get: function () {
+                        return typeof computed[key] === 'function'?
+                        computed[key].bind(this)() : ''
+                    },
+                    set : function () {}
+                })
+            });
+        }
     }
 }
