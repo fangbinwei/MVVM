@@ -50,7 +50,7 @@ Compile.prototype = {
                 var dirValue = attr.value;
                 var dir = attrName.substring(2); // text
                 if (me.isEventDirective(dir)) {
-                    // TODO
+                    compileUtil.eventHandler(node, me.$vm, dirValue, dir);
                 } else {
                     compileUtil[dir] && compileUtil[dir](node, me.$vm, dirValue);
                 }
@@ -78,13 +78,19 @@ var compileUtil = {
     text: function (node, vm, dirVal) {
         this.bind(node, vm, dirVal, 'text')
     },
+    html: function (node, vm, dirVal) {
+        this.bind(node, vm, dirVal, 'html')
+    },
+    class: function (node, vm, dirVal) {
+        this.bind(node, vm, dirVal, 'class')
+    },
     bind: function (node, vm, dirVal, dir) {
         var updaterFn = updater[dir + 'Updater'];
         updaterFn && updaterFn(node, this._getVMVal(vm, dirVal));
 
         // 绑定时实例化Watcher
-        new Watcher(vm, dirVal, dir, function (value) {
-            updaterFn && updaterFn(node, value);
+        new Watcher(vm, dirVal, dir, function (value, oldValue) {
+            updaterFn && updaterFn(node, value, oldValue);
         })
     },
     model: function (node, vm, dirVal) {
@@ -100,6 +106,13 @@ var compileUtil = {
                 value = newVal;
             }
         })
+    },
+    eventHandler: function (node, vm, dirVal, dir) {
+        var eventType = dir.split(':')[1],
+            fn = vm.$options.methods && vm.$options.methods[dirVal];
+        if (eventType && fn) {
+            node.addEventListener(eventType, fn.bind(vm), false);
+        }
     },
     _getVMVal: function (vm, dirVal) {
         var val = vm;
@@ -128,5 +141,14 @@ var updater = {
     },
     textUpdater: function (node, value) {
         node.textContent = typeof value == 'undefined' ? '' : value;
+    },
+    htmlUpdater: function (node, value) {
+        node.innerHTML = typeof value == 'undefined' ? '' : value;
+    },
+    classUpdater: function (node, value, oldValue) {
+        var className = node.className;
+        className = className.replace(oldValue, '').replace(/\s$/, '');
+        var space = className && String(value) ? ' ' : '';
+        node.className = className + space + value;
     }
 };
