@@ -22,10 +22,7 @@ function Watcher(vm, dirVal, dir, cb) {
 Watcher.prototype = {
     constructor: Watcher,
     addDep: function (dep) {
-        console.log('depIds', this.depIds)
         if (!this.depIds.hasOwnProperty(dep.id)) {
-            console.log('dep.id', dep.id)
-            console.log('watcher', this)
             dep.addSub(this);
             this.depIds[dep.id] = dep;
         }
@@ -41,6 +38,7 @@ Watcher.prototype = {
         return function (obj) {
             if (!obj) return;
             dirVal.forEach(function (item) {
+                // 如果item是computed的属性,在调用计算属性(函数)时,在计算属性(函数)内部会触发observer中的getter
                 obj = obj[item]; // watcher 也会添加到 父级dep
             });
             return obj;
@@ -55,7 +53,8 @@ Watcher.prototype = {
         var oldValue = this.value;
         if (value !== oldValue) {
             this.value = value;
-            this.cb.call(this.vm, value);
+            // v-class 会用到oldValue
+            this.cb.call(this.vm, value, oldValue);
         }
     }
 };
